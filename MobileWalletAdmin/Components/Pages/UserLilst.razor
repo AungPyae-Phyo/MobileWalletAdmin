@@ -15,47 +15,45 @@
 }
 else
 {
-        <div style="min-width: 1200px;">
-            <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0"
-                      AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="width: 100%;">
-                <ToolBarContent>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search..."
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Medium" Immediate="true" OnInput="@(() => OnSearch(searchString))" />
-                </ToolBarContent>
+    <div style="min-width: 1200px;">
+        <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0"
+                  AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="width: 100%;">
+            <ToolBarContent>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search..."
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Immediate="true" OnInput="@(() => OnSearch(searchString))" />
+            </ToolBarContent>
 
-                <HeaderContent>
-                    <MudTh Style="">No.</MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.createdOn)">Registration Date</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.UserName)">User Name</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.PhoneNumber)">Phone Number</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.Email)">Email</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.Role)">Role</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.Status)">KYC Status</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.WalletID)">Wallet ID</MudTableSortLabel></MudTh>
-                    <MudTh Style=""><MudTableSortLabel SortBy="new Func<UserModel, object>(x => x.Balance)">Balance</MudTableSortLabel></MudTh>
-                </HeaderContent>
+            <HeaderContent>
+                <MudTh>No.</MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.createdOn)">Registration Date</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.UserName)">User Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.PhoneNumber)">Phone Number</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Email)">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Role)">Role</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Status)">KYC Status</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.WalletID)">Wallet ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Balance)">Balance</MudTableSortLabel></MudTh>
+            </HeaderContent>
 
-                <RowTemplate Context="user">
-                    <MudTd Style="padding: 12px 16px;">@(users.IndexOf(user) + 1)</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Date">@user.createdOn.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="User Name">@user.UserName</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Phone Number">@user.PhoneNumber</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Email">@user.Email</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Role">@user.Role</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Status">
-                        @GetStatusChip(user.Status)
-                    </MudTd>
-                    <MudTd Style="padding: 12px 16px; word-break: break-all; min-width: 200px;" DataLabel="WalletID">@user.WalletID</MudTd>
-                    <MudTd Style="padding: 12px 16px;" DataLabel="Balance">@user.Balance.ToString("N0")</MudTd>
-                </RowTemplate>
+            <RowTemplate Context="user">
+                <MudTd>@(filteredUsers.IndexOf(user) + 1)</MudTd>
+                <MudTd>@user.createdOn.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+                <MudTd>@user.UserName</MudTd>
+                <MudTd>@user.PhoneNumber</MudTd>
+                <MudTd>@user.Email</MudTd>
+                <MudTd>@user.Role</MudTd>
+                <MudTd>@GetStatusChip(user.Status)</MudTd>
+                <MudTd>@user.WalletID</MudTd>
+                <MudTd>@user.Balance.ToString("N0")</MudTd>
+            </RowTemplate>
 
-                <PagerContent>
-                    <MudTablePager />
-                </PagerContent>
-            </MudTable>
-        </div>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </div>
 }
 
 @code {
@@ -67,15 +65,13 @@ else
     protected override async Task OnInitializedAsync()
     {
         _cts = new CancellationTokenSource();
-
+        Console.WriteLine("Initializing User List...");
         try
         {
             users = await UserService.GetAll(_cts.Token);
             filteredUsers = users.ToList();
-            if (!_cts.IsCancellationRequested)
-            {
-                await InvokeAsync(StateHasChanged);
-            }
+            Console.WriteLine($"Fetched {users.Count} users");
+            await InvokeAsync(StateHasChanged);
         }
         catch (OperationCanceledException)
         {
@@ -87,14 +83,13 @@ else
         }
     }
 
-    private RenderFragment GetStatusChip(Status status) => builder =>
+    private RenderFragment GetStatusChip(BankStatus status) => builder =>
     {
         var statusText = EnumHelper.GetEnumDescription(status);
         var (color, icon) = GetStatusStyle(status);
-
-        builder.OpenComponent<MudChip<string>>(0);
+        builder.OpenComponent<MudChip<string>>(0); 
         builder.AddAttribute(1, "Color", color);
-        builder.AddAttribute(2, "Variant", Variant.Filled);
+        builder.AddAttribute(2, "Variant", Variant.Outlined);
         builder.AddAttribute(3, "Class", "ma-1");
         builder.AddAttribute(4, "ChildContent", (RenderFragment)(chipBuilder =>
         {
@@ -110,42 +105,48 @@ else
         builder.CloseComponent();
     };
 
-    private (Color Color, string Icon) GetStatusStyle(Status status)
+    private (Color Color, string Icon) GetStatusStyle(BankStatus status)
     {
+        Console.WriteLine($"Processing status: {status}");
         return status switch
         {
-            Status.NEW_USER => (Color.Default, Icons.Material.Filled.Person),
-            Status.ACTIVE => (Color.Success, Icons.Material.Filled.CheckCircle),
-            Status.INACTIVE => (Color.Default, Icons.Material.Filled.PersonOff),
-            Status.PENDING => (Color.Warning, Icons.Material.Filled.Pending),
-            Status.SUSPENDED => (Color.Error, Icons.Material.Filled.Block),
-            Status.APPROVE => (Color.Info, Icons.Material.Filled.Verified),
-            Status.REJECT => (Color.Error, Icons.Material.Filled.Cancel),
+            BankStatus.NEW_USER => (Color.Default, Icons.Material.Filled.Person),
+            //BankStatus.NEW_USER => (Color.Success, Icons.Material.Filled.CheckCircle),
+            BankStatus.ACTIVE => (Color.Success, Icons.Material.Filled.CheckCircle),
+            BankStatus.INACTIVE => (Color.Default, Icons.Material.Filled.PersonOff),
+            BankStatus.PENDING => (Color.Warning, Icons.Material.Filled.Pending),
+            BankStatus.SUSPENDED => (Color.Error, Icons.Material.Filled.Block),
+            BankStatus.APPROVE => (Color.Info, Icons.Material.Filled.Verified),
+            BankStatus.REJECT => (Color.Error, Icons.Material.Filled.Cancel),
             _ => (Color.Default, Icons.Material.Filled.Help)
         };
     }
 
     private void OnSearch(string text)
     {
+        Console.WriteLine($"Search input: {text}");
         searchString = text;
         if (string.IsNullOrWhiteSpace(searchString))
         {
             filteredUsers = users.ToList();
-            return;
         }
-
-        filteredUsers = users.Where(x =>
-            (x.UserName != null && x.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-            (x.Email != null && x.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-            (x.PhoneNumber != null && x.PhoneNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-            (x.WalletID != null && x.WalletID.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-            (x.Role != null && x.Role.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
-            EnumHelper.GetEnumDescription(x.Status).Contains(searchString, StringComparison.OrdinalIgnoreCase)
-        ).ToList();
+        else
+        {
+            filteredUsers = users.Where(x =>
+                (x.UserName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (x.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (x.PhoneNumber?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (x.WalletID?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (x.Role?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                EnumHelper.GetEnumDescription(x.Status).Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+        Console.WriteLine($"Filtered Users Count: {filteredUsers.Count}");
     }
 
     public void Dispose()
     {
+        Console.WriteLine("Disposing resources...");
         _cts?.Cancel();
         _cts?.Dispose();
     }
