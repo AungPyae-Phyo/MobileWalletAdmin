@@ -2,7 +2,7 @@
 
 namespace MobileWalletAdmin.Enum
 {
-    public enum Status
+    public enum BankStatus
     {
         [Display(Name = "New User")]
         NEW_USER,
