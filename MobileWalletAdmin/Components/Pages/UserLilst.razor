@@ -34,7 +34,7 @@ else
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Role)">Role</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Status)">KYC Status</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.DocumentType)">Document Type</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.WalletID)">Account Number</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.AccountNumber)">Account Number</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Balance)">Balance</MudTableSortLabel></MudTh>
             </HeaderContent>
 
@@ -47,8 +47,8 @@ else
                 <MudTd>@user.Role</MudTd>
                 <MudTd>@GetStatusChip(user.Status)</MudTd>
                 <MudTd>@EnumHelper.GetEnumDescription(user.DocumentType)</MudTd>
-                <MudTd>@FormatAsBankAccount(user.WalletID)</MudTd>
-                <MudTd>$@user.Balance.ToString("N0")</MudTd>
+                <MudTd>@user.AccountNumber</MudTd>
+                <MudTd>@user.Balance.ToString("N0")</MudTd>
             </RowTemplate>
 
             <PagerContent>
@@ -92,14 +92,14 @@ else
         builder.OpenComponent<MudChip<string>>(0); 
         builder.AddAttribute(1, "Color", color);
         builder.AddAttribute(2, "Variant", Variant.Text);
-        builder.AddAttribute(3, "Style", "border-radius: 9px; margin: 4px;");
+        builder.AddAttribute(3, "Class", "ma-1");
         builder.AddAttribute(4, "ChildContent", (RenderFragment)(chipBuilder =>
         {
             if (!string.IsNullOrEmpty(icon))
             {
                 chipBuilder.OpenComponent<MudIcon>(0);
                 chipBuilder.AddAttribute(1, "Icon", icon);
-                chipBuilder.AddAttribute(2, "Style", "font-size: 16px; margin-right: 4px;");
+                chipBuilder.AddAttribute(2, "Class", "mr-1");
                 chipBuilder.CloseComponent();
             }
             chipBuilder.AddContent(4, statusText);
@@ -113,6 +113,7 @@ else
         return status switch
         {
             BankStatus.NEW_USER => (Color.Default, Icons.Material.Filled.Person),
+            //BankStatus.NEW_USER => (Color.Success, Icons.Material.Filled.CheckCircle),
             BankStatus.ACTIVE => (Color.Success, Icons.Material.Filled.CheckCircle),
             BankStatus.INACTIVE => (Color.Default, Icons.Material.Filled.PersonOff),
             BankStatus.PENDING => (Color.Warning, Icons.Material.Filled.Pending),
@@ -121,34 +122,6 @@ else
             BankStatus.REJECT => (Color.Error, Icons.Material.Filled.Cancel),
             _ => (Color.Default, Icons.Material.Filled.Help)
         };
-    }
-    // For Guid input
-    private string FormatAsBankAccount(Guid walletId)
-    {
-        byte[] guidBytes = walletId.ToByteArray();
-        long numericValue = BitConverter.ToInt64(guidBytes, 0) ^ BitConverter.ToInt64(guidBytes, 8);
-        long positiveValue = Math.Abs(numericValue);
-        string accountNumber = (positiveValue % 100000000000000).ToString("D14");
-
-        // Format with hyphens: XXXX-XXXX-XXXXXX
-        return $"{accountNumber.Substring(0, 4)}-{accountNumber.Substring(4, 4)}-{accountNumber.Substring(8, 6)}";
-    }
-
-    private string FormatAsBankAccount(string walletIdString)
-    {
-        // Handle null or empty string
-        if (string.IsNullOrWhiteSpace(walletIdString))
-        {
-            return "INVALID_ID";
-        }
-
-        // Try to parse as Guid
-        if (Guid.TryParse(walletIdString, out Guid walletId))
-        {
-            return FormatAsBankAccount(walletId); // Use the Guid version
-        }
-
-        return "INVALID_ID";
     }
 
     private void OnSearch(string text)
@@ -165,7 +138,7 @@ else
                 (x.UserName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (x.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (x.PhoneNumber?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (FormatAsBankAccount(x.WalletID).Replace("-", "").Contains(searchString)) ||
+                (x.AccountNumber?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (x.Role?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 EnumHelper.GetEnumDescription(x.Status).Contains(searchString, StringComparison.OrdinalIgnoreCase)
             ).ToList();

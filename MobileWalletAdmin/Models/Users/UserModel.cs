@@ -14,7 +14,7 @@ namespace MobileWalletAdmin.Models.Users
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public DocumentType? DocumentType { get; set; }
 
-        public Guid WalletID { get; set; }
+        public string AccountNumber { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public BankStatus Status { get; set; }
