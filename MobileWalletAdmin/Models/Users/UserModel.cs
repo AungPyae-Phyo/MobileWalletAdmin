@@ -1,4 +1,5 @@
 ﻿using MobileWalletAdmin.Enum;
+using System.Diagnostics.SymbolStore;
 using System.Text.Json.Serialization;
 
 namespace MobileWalletAdmin.Models.Users
@@ -9,10 +10,14 @@ namespace MobileWalletAdmin.Models.Users
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public DocumentType? DocumentType { get; set; }
+
         public string WalletID { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public Status Status { get; set; }
+        public BankStatus Status { get; set; }
         public decimal Balance { get; set; }
         public DateTime createdOn { get; set; }
     }
