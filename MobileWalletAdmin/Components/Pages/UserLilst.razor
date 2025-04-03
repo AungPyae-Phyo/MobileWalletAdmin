@@ -6,7 +6,7 @@
 @using MobileWalletAdmin.Services
 @inject UserService UserService
 @using System.Linq
-
+<PageTitle>User Lists</PageTitle>
 <MudText Typo="Typo.h3" GutterBottom="true">User Management</MudText>
 
 @if (users == null)
@@ -33,6 +33,7 @@ else
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Email)">Email</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Role)">Role</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Status)">KYC Status</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.DocumentType)">Document Type</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.WalletID)">Wallet ID</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Balance)">Balance</MudTableSortLabel></MudTh>
             </HeaderContent>
@@ -45,6 +46,7 @@ else
                 <MudTd>@user.Email</MudTd>
                 <MudTd>@user.Role</MudTd>
                 <MudTd>@GetStatusChip(user.Status)</MudTd>
+                <MudTd>@EnumHelper.GetEnumDescription(user.DocumentType)</MudTd>
                 <MudTd>@user.WalletID</MudTd>
                 <MudTd>@user.Balance.ToString("N0")</MudTd>
             </RowTemplate>
@@ -89,7 +91,7 @@ else
         var (color, icon) = GetStatusStyle(status);
         builder.OpenComponent<MudChip<string>>(0); 
         builder.AddAttribute(1, "Color", color);
-        builder.AddAttribute(2, "Variant", Variant.Outlined);
+        builder.AddAttribute(2, "Variant", Variant.Text);
         builder.AddAttribute(3, "Class", "ma-1");
         builder.AddAttribute(4, "ChildContent", (RenderFragment)(chipBuilder =>
         {
