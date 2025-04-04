@@ -4,10 +4,12 @@
 @using MobileWalletAdmin.Models
 @using MobileWalletAdmin.Models.Users
 @using MobileWalletAdmin.Services
-@inject UserService UserService
 @using System.Linq
+@inject UserService UserService
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
 <PageTitle>User Lists</PageTitle>
-<MudText Typo="Typo.h3" GutterBottom="true">User Management</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">User Lists</MudText>
 
 @if (users == null)
 {
@@ -17,7 +19,7 @@ else
 {
     <div style="min-width: 1200px;">
         <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0"
-                  AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="width: 100%;">
+                  AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="table-layout: fixed; width: 100%;">
             <ToolBarContent>
                 <MudSpacer />
                 <MudTextField @bind-Value="searchString" Placeholder="Search..."
@@ -26,29 +28,56 @@ else
             </ToolBarContent>
 
             <HeaderContent>
-                <MudTh>No.</MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.createdOn)">Registration Date</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.UserName)">User Name</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.PhoneNumber)">Phone Number</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Email)">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Role)">Role</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Status)">KYC Status</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.DocumentType)">Document Type</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.AccountNumber)">Account Number</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="@((UserModel x) => x.Balance)">Balance</MudTableSortLabel></MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60px;">No.</MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 160px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.createdOn)">Registration Date</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 150px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.UserName)">User Name</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 140px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.PhoneNumber)">Phone Number</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 200px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.Email)">Email</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 120px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.Role)">Role</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 140px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.Status)">KYC Status</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 150px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.DocumentType)">Document Type</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 180px;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.AccountNumber)">Account Number</MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 120px; text-align: right;">
+                    <MudTableSortLabel SortBy="@((UserModel x) => x.Balance)">Balance</MudTableSortLabel>
+                </MudTh>
             </HeaderContent>
 
             <RowTemplate Context="user">
-                <MudTd>@(filteredUsers.IndexOf(user) + 1)</MudTd>
-                <MudTd>@user.createdOn.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
-                <MudTd>@user.UserName</MudTd>
-                <MudTd>@user.PhoneNumber</MudTd>
-                <MudTd>@user.Email</MudTd>
-                <MudTd>@user.Role</MudTd>
-                <MudTd>@GetStatusChip(user.Status)</MudTd>
-                <MudTd>@EnumHelper.GetEnumDescription(user.DocumentType)</MudTd>
-                <MudTd>@user.AccountNumber</MudTd>
-                <MudTd>@user.Balance.ToString("N0")</MudTd>
+                <MudTd Style="white-space: nowrap;" Class="font-weight-medium">@(filteredUsers.IndexOf(user) + 1)</MudTd>
+                <MudTd Style="white-space: nowrap;">@user.createdOn.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+                <MudTd Style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">@user.UserName</MudTd>
+                <MudTd Style="white-space: nowrap;">@user.PhoneNumber</MudTd>
+                <MudTd Style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">@user.Email</MudTd>
+                <MudTd Style="white-space: nowrap;">@user.Role</MudTd>
+                <MudTd Style="white-space: nowrap;">@GetStatusChip(user.Status)</MudTd>
+                <MudTd Style="white-space: nowrap;">@EnumHelper.GetEnumDescription(user.DocumentType)</MudTd>
+                <MudTd Style="white-space: nowrap;">
+                    <MudTooltip Text="Click to copy" Placement="Placement.Bottom">
+                        <span style="font-family: monospace; cursor: pointer;" @onclick="() => CopyToClipboard(user.AccountNumber)">
+                            @user.AccountNumber
+                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" Class="ml-1" />
+                        </span>
+                    </MudTooltip>
+                </MudTd>
+                <MudTd Style="white-space: nowrap; text-align: right;" Class="font-weight-bold">
+                    $@user.Balance.ToString("N0")
+                </MudTd>
             </RowTemplate>
 
             <PagerContent>
@@ -122,6 +151,20 @@ else
             BankStatus.REJECT => (Color.Error, Icons.Material.Filled.Cancel),
             _ => (Color.Default, Icons.Material.Filled.Help)
         };
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("Account number copied!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to copy account number", Severity.Error);
+            Console.WriteLine($"Copy failed: {ex.Message}");
+        }
     }
 
     private void OnSearch(string text)
