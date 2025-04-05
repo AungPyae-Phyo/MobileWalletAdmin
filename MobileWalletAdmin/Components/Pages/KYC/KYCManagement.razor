@@ -16,25 +16,27 @@
     }
 </MudBreadcrumbs>
 
-<MudTable Items="@kyc" Bordered="true" Striped="true" Hover="true"
+<MudTable Items="@filterKYC" Bordered="false" Hover="true" SortLabel="Sort By" Elevation="0"
+          AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="table-layout: fixed; width: 100%;"
 OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)">
     <HeaderContent>
-        <MudTh>Request Date</MudTh>
+        <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60px;">No.</MudTh>
+        <MudTh>Request Date & Time</MudTh>
         <MudTh>User Name</MudTh>
         <MudTh>Identity</MudTh>
-        <MudTh>Phone Number</MudTh>
+        <MudTh>Last Modified Date & Time</MudTh>
         <MudTh>KYC Status</MudTh>
         <MudTh>Date of Birth</MudTh>
         <MudTh>Approved By</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Request Date">@context.createdOn.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd Style="white-space: nowrap;" Class="font-weight-medium">@(filterKYC.IndexOf(context) + 1)</MudTd>
+        <MudTd DataLabel="Request Date">@context.createdOn</MudTd>
         <MudTd DataLabel="User Name">@context.Name</MudTd>
         <MudTd DataLabel="Identity">@context.Identity</MudTd>
-        <MudTd DataLabel="Phone Number">@context.PhoneNumber</MudTd>
-        <MudTd DataLabel="KYC Status">
-            @context.Status
-        </MudTd>
+        <MudTd DataLabel="Last Modified">@context.LastModifiedOn</MudTd>
+        <MudTd>@GetStatusChip(context.Status)</MudTd>
+
         <MudTd DataLabel="Date of Birth">@context.DOB?.ToString("dd/MM/yyyy")</MudTd>
         <MudTd DataLabel="Approved By">@context.CreatedBy</MudTd>
     </RowTemplate>
@@ -44,6 +46,7 @@ OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this,
     private List<KYCModel> kyc = new();
     private string SelectedUserId { get; set; }
     private List<KYCModel> filterKYC = new();
+
 
     private CancellationTokenSource? _cts;
 
