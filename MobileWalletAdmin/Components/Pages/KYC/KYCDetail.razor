@@ -1,91 +1,96 @@
 ﻿@page "/kyc-management/kyc-update/{Id}"
 @using MobileWalletAdmin.Models.KYC
+@using MobileWalletAdmin.Models.Users
 @using MobileWalletAdmin.Services
 @inject KYCService KYCService
+@inject UserService UserService
 @inject NavigationManager Navigation
 
 <MudBreadcrumbs Items="_breadcrumbItems" Separator="/" />
 
-<MudCard>
-    <MudCardHeader>
-        <MudText Typo="Typo.h5">KYC Updates Detail</MudText>
-    </MudCardHeader>
+<MudText Typo="Typo.h6" Class="mt-4 mb-2">Customer Information</MudText>
 
-    <MudCardContent>
-        <MudGrid>
-            <MudItem xs="12" sm="6">
-                <MudText>Customer ID : 0000000000020169</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="3">
-                <MudText>User Type : Customer</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="3">
-                <MudText>Status : <MudBadge Color="Color.Success">Active</MudBadge></MudText>
-                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Class="ml-2">Edit</MudButton>
-            </MudItem>
-        </MudGrid>
+<!-- Header Section -->
+<MudPaper Class="p-6 mb-12 d-flex justify-start align-center" Elevation="2">
 
-        <MudText Typo="Typo.h6" Class="mt-4">Customer Information</MudText>
+    <MudText Class="ml-6 mt-6 mb-6"><b>Customer ID :</b> @kyc.UserID</MudText>
+    <span class="ml-12"></span>
+    <MudText>|</MudText>
+    <span class="ml-12"></span>
 
-        <MudSimpleTable Class="mt-2" Hover="true" Striped="true">
-            <thead>
-                <tr>
-                    <th>Customer:</th>
-                    <th>HLAINE SANDAR OO</th>
-                    <th>Address</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Gender:</td>
-                    <td>Male</td>
-                    <td>Country:</td>
-                </tr>
-                <tr>
-                    <td>Phone Number:</td>
-                    <td>@kyc.Name</td>
-                    <td>State:</td>
-                </tr>
-                <tr>
-                    <td>Date of Birth:</td>
-                    <td>04/03/2003</td>
-                    <td>Township:</td>
-                </tr>
-                <tr>
-                    <td>Occupation:</td>
-                    <td>Dev</td>
-                    <td>Address:</td>
-                </tr>
-                <tr>
-                    <td>Father's Name:</td>
-                    <td>U Ba</td>
-                    <td>No.12 Latha Street</td>
-                </tr>
-                <tr>
-                    <td>Email:</td>
-                    <td>kkk@gmail.com</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </MudSimpleTable>
-    </MudCardContent>
-</MudCard>
+
+    <MudText><b>User Type :</b> Customer</MudText>
+    <span class="ml-12"></span>
+
+
+    <MudText>|</MudText>
+    <span class="ml-12"></span>
+
+
+    <MudText><b>Status :</b> <span >@kyc.Status</span></MudText>
+    <span class="ml-12"></span>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Edit"
+               OnClick="@(() => Navigation.NavigateTo($"/kyc-management/kyc-edit/{Id}"))">
+        Edit
+    </MudButton>
+</MudPaper>
+
+<!-- Customer Details Section -->
+<MudPaper Class="pa-6 rounded-lg shadow-sm bg-grey-lighten-5" Style="width: 50%;">
+    <MudGrid>
+        <MudItem xs="12" Class="mb-4">
+            <MudText Typo="Typo.subtitle1" Class="mb-4" Color="Color.Primary">Customer Details</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Customer Name:</b></MudText>
+            <MudText>@kyc.Name</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Phone Number:</b></MudText>
+            <MudText>@(string.IsNullOrEmpty(currentUser?.PhoneNumber) ? "-" : currentUser?.PhoneNumber)</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Date of Birth:</b></MudText>
+            <MudText>@(kyc.DOB?.ToString("dd/MM/yyyy") ?? "-")</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Father's Name:</b></MudText>
+            <MudText>@(string.IsNullOrEmpty(kyc.FatherName) ? "-" : kyc.FatherName)</MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
 @code {
     [Parameter]
     public string Id { get; set; }
 
-    private KYCModel kyc= new();
+    private KYCModel kyc = new();
+    private List<UserModel> users = new(); 
     private CancellationTokenSource? _cts;
+    private UserModel? currentUser => users.FirstOrDefault(u => u.UserID == kyc.UserID);
 
     protected override async Task OnInitializedAsync()
     {
         _cts = new CancellationTokenSource();
-        Console.WriteLine("Initializing User List...");
         try
         {
-            kyc = await KYCService.GetById(Id, _cts.Token);
-           // filterKYC = kyc.ToList();
-           // Console.WriteLine($"Fetched {kyc.Count} KYC Users");
+            // Call both API endpoints
+            var kycTask = KYCService.GetById(Id, _cts.Token);
+            var userTask = UserService.GetAll(_cts.Token);
+
+            // Wait for both at once (faster)
+            await Task.WhenAll(kycTask, userTask);
+
+            // Assign results
+            kyc = await kycTask;
+            users = await userTask;
+
             await InvokeAsync(StateHasChanged);
         }
         catch (OperationCanceledException)
@@ -98,17 +103,21 @@
         }
     }
 
-    private List<BreadcrumbItem> _breadcrumbItems = new();
-
-    protected override void OnParametersSet()
+    private List<BreadcrumbItem> _breadcrumbItems = new()
     {
-        _breadcrumbItems = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/", icon: Icons.Material.Filled.Home),
-            new BreadcrumbItem("KYC Management", href: "/kyc-management"),
-           new BreadcrumbItem($"Details Update", href: null, disabled: true)
-        };
+        new BreadcrumbItem("Home", href: "/", icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("KYC Management", href: "/kyc-management"),
+        new BreadcrumbItem("Details Update", href: null, disabled: true)
+    };
 
-        // Load user data based on UserId here
+    private Color GetStatusColor(string status)
+    {
+        return status?.ToUpper() switch
+        {
+            "PENDING" => Color.Warning,
+            "APPROVED" => Color.Success,
+            "REJECTED" => Color.Error,
+            _ => Color.Default
+        };
     }
 }
