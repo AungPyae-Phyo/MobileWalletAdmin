@@ -20,7 +20,7 @@ namespace MobileWalletAdmin.Models.KYC
         public string? FatherName { get; set; }
         public string AccountNumber { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public BankStatus? Status { get; set; }
+        public BankStatus Status { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime createdOn { get; set; }
         public DateTime? LastModifiedOn { get; set; }
