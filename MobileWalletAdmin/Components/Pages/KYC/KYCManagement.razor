@@ -1,0 +1,126 @@
+﻿@page "/kyc-management"
+@using MobileWalletAdmin.Enum
+@using MobileWalletAdmin.Helper
+@using MobileWalletAdmin.Models.KYC
+@using MobileWalletAdmin.Services
+@inject KYCService KYCService
+
+@inject NavigationManager Navigation
+
+<MudBreadcrumbs>
+    <MudBreadcrumbItem Text="Home" Href="/" />
+    <MudBreadcrumbItem Text="KYC Management" Href="/kyc-management" />
+    @if (!string.IsNullOrEmpty(SelectedUserId))
+    {
+        <MudBreadcrumbItem Text="KYC Detail" Href="@($"kyc-management/kyc-detail/{SelectedUserId}")" />
+    }
+</MudBreadcrumbs>
+
+<MudTable Items="@kyc" Bordered="true" Striped="true" Hover="true"
+OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)">
+    <HeaderContent>
+        <MudTh>Request Date</MudTh>
+        <MudTh>User Name</MudTh>
+        <MudTh>Identity</MudTh>
+        <MudTh>Phone Number</MudTh>
+        <MudTh>KYC Status</MudTh>
+        <MudTh>Date of Birth</MudTh>
+        <MudTh>Approved By</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Request Date">@context.createdOn.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="User Name">@context.Name</MudTd>
+        <MudTd DataLabel="Identity">@context.Identity</MudTd>
+        <MudTd DataLabel="Phone Number">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="KYC Status">
+            @context.Status
+        </MudTd>
+        <MudTd DataLabel="Date of Birth">@context.DOB?.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Approved By">@context.CreatedBy</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<KYCModel> kyc = new();
+    private string SelectedUserId { get; set; }
+    private List<KYCModel> filterKYC = new();
+
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cts = new CancellationTokenSource();
+        Console.WriteLine("Initializing User List...");
+        try
+        {
+            kyc = await KYCService.GetAll(_cts.Token);
+            filterKYC = kyc.ToList();
+            Console.WriteLine($"Fetched {kyc.Count} KYC Users");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Operation was canceled.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+
+    private RenderFragment GetStatusChip(BankStatus status) => builder =>
+       {
+           var statusText = EnumHelper.GetEnumDescription(status);
+           var (color, icon) = GetStatusStyle(status);
+           builder.OpenComponent<MudChip<string>>(0);
+           builder.AddAttribute(1, "Color", color);
+           builder.AddAttribute(2, "Variant", Variant.Text);
+           builder.AddAttribute(3, "Class", "ma-1");
+           builder.AddAttribute(4, "ChildContent", (RenderFragment)(chipBuilder =>
+       {
+           if (!string.IsNullOrEmpty(icon))
+           {
+               chipBuilder.OpenComponent<MudIcon>(0);
+               chipBuilder.AddAttribute(1, "Icon", icon);
+               chipBuilder.AddAttribute(2, "Class", "mr-1");
+               chipBuilder.CloseComponent();
+           }
+           chipBuilder.AddContent(4, statusText);
+       }));
+           builder.CloseComponent();
+       };
+
+    private (Color Color, string Icon) GetStatusStyle(BankStatus status)
+    {
+        Console.WriteLine($"Processing status: {status}");
+        return status switch
+        {
+            BankStatus.NEW_USER => (Color.Default, Icons.Material.Filled.Person),
+            //BankStatus.NEW_USER => (Color.Success, Icons.Material.Filled.CheckCircle),
+            BankStatus.ACTIVE => (Color.Success, Icons.Material.Filled.CheckCircle),
+            BankStatus.INACTIVE => (Color.Default, Icons.Material.Filled.PersonOff),
+            BankStatus.PENDING => (Color.Warning, Icons.Material.Filled.Pending),
+            BankStatus.SUSPENDED => (Color.Error, Icons.Material.Filled.Block),
+            BankStatus.APPROVE => (Color.Info, Icons.Material.Filled.Verified),
+            BankStatus.REJECT => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+    private void OnRowClicked(TableRowClickEventArgs<KYCModel> args)
+    {
+        SelectedUserId = args.Item.Id.ToString();
+        Navigation.NavigateTo($"kyc-management/kyc-update/{SelectedUserId}");
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Pending" => Color.Warning,
+            "Approved" => Color.Success,
+            "Rejected" => Color.Error,
+            _ => Color.Default
+        };
+    }
+}
