@@ -1,4 +1,5 @@
-﻿@page "/kyc-management/kyc-update/{Id}"
+﻿@page "/kyc-management/kyc-detail/{Id}"
+@using MobileWalletAdmin.Helper
 @using MobileWalletAdmin.Models.KYC
 @using MobileWalletAdmin.Models.Users
 @using MobileWalletAdmin.Services
@@ -25,28 +26,31 @@
 
     <MudText>|</MudText>
     <span class="ml-12"></span>
-
-
-    <MudText><b>Status :</b> <span >@kyc.Status</span></MudText>
-    <span class="ml-12"></span>
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Edit"
-               OnClick="@(() => Navigation.NavigateTo($"/kyc-management/kyc-edit/{Id}"))">
-        Edit
-    </MudButton>
+    
+        <b>Status :</b>
+       <span class="ml-2">
+            <MudText Color="@EnumHelper.GetStatusColor(kyc.Status)"> @EnumHelper.GetEnumDescription(kyc.Status) </MudText>
+       </span>
+      
+     <span class="ml-12"></span>
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Edit"
+           OnClick="@(() => Navigation.NavigateTo($"/kyc-management/status-edit/{Id}"))">
+    Edit
+</MudButton>
 </MudPaper>
 
 <!-- Customer Details Section -->
 <MudPaper Class="pa-6 rounded-lg shadow-sm bg-grey-lighten-5" Style="width: 50%;">
     <MudGrid>
-        <MudItem xs="12" Class="mb-4">
-            <MudText Typo="Typo.subtitle1" Class="mb-4" Color="Color.Primary">Customer Details</MudText>
+        <MudItem xs="12" Class="mb-3">
+            <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Primary">Customer Details</MudText>
         </MudItem>
 
         <MudItem xs="12" Class="d-flex mb-3">
             <MudText Class="mr-2" Style="min-width: 140px;"><b>Customer Name:</b></MudText>
-            <MudText>@kyc.Name</MudText>
+            <MudText>@currentUser?.UserName</MudText>
         </MudItem>
 
         <MudItem xs="12" Class="d-flex mb-3">
@@ -107,7 +111,7 @@
     {
         new BreadcrumbItem("Home", href: "/", icon: Icons.Material.Filled.Home),
         new BreadcrumbItem("KYC Management", href: "/kyc-management"),
-        new BreadcrumbItem("Details Update", href: null, disabled: true)
+        new BreadcrumbItem("Detail", href: null, disabled: true)
     };
 
     private Color GetStatusColor(string status)
