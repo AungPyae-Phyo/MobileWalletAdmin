@@ -19,9 +19,6 @@ namespace MobileWalletAdmin.Enum
         [Display(Name = "Inactive")]
         INACTIVE,
 
-        [Display(Name = "On Hold")]
-        ON_HOLD,
-
         [Display(Name = "Suspended")]
         SUSPENDED,
 
@@ -33,9 +30,6 @@ namespace MobileWalletAdmin.Enum
 
         [Display(Name = "Blocked")]
         BLOCK,
-
-        [Display(Name = "Under Maintenance")]
-        UNDER_MAINTENANCE,
 
         [Display(Name = "Locked")]
         LOCKED,
