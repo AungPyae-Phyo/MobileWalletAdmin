@@ -10,7 +10,6 @@
 @inject ISnackbar Snackbar
 <PageTitle>User Lists</PageTitle>
 <MudText Typo="Typo.h3" GutterBottom="true">User Lists</MudText>
-
 @if (users == null)
 {
     <MudProgressCircular Color="Color.Default" Indeterminate="true" />
@@ -18,7 +17,11 @@
 else
 {
     <div style="min-width: 1200px;">
-        <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0"
+        @* <MudPaper Class="d-flex justify-end pa-2"> *@
+        @*     <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="ExportExcel" StartIcon="@Icons.Material.Filled.FileDownload">Export Excel</MudButton> *@
+        @*     <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ExportPDF" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="ml-2">Export PDF</MudButton> *@
+        @* </MudPaper> *@
+        <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0" id="kyc-table"
                   AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="table-layout: fixed; width: 100%;">
             <ToolBarContent>
                 <MudSpacer />
@@ -71,13 +74,14 @@ else
                     <MudTooltip Text="Click to copy" Placement="Placement.Bottom">
                         <span style="font-family: monospace; cursor: pointer;" @onclick="() => CopyToClipboard(user.AccountNumber)">
                             @user.AccountNumber
-                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" Class="ml-1" />
+                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" />
                         </span>
                     </MudTooltip>
                 </MudTd>
                 <MudTd Style="white-space: nowrap; text-align: right;" Class="font-weight-bold">
                     $@user.Balance.ToString("N0")
                 </MudTd>
+
             </RowTemplate>
 
             <PagerContent>
@@ -92,6 +96,7 @@ else
     private List<UserModel> filteredUsers = new();
     private string searchString = "";
     private CancellationTokenSource? _cts;
+    private bool hasConnectionError = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,7 +157,7 @@ else
             _ => (Color.Default, Icons.Material.Filled.Help)
         };
     }
-
+ 
     private async Task CopyToClipboard(string text)
     {
         try
@@ -195,4 +200,6 @@ else
         _cts?.Cancel();
         _cts?.Dispose();
     }
+  
+
 }
