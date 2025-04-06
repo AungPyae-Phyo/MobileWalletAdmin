@@ -1,26 +1,38 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MobileWalletAdmin.Enum;
+using System.ComponentModel.DataAnnotations;
+using MudBlazor; // Add this for MudBlazor's Color type
 using System.Reflection;
 
 namespace MobileWalletAdmin.Helper
 {
     public static class EnumHelper
     {
-        public static string GetEnumDescription(System.Enum? value) // Nullable Enum
+        public static string GetEnumDescription(System.Enum? value)
         {
-            // Check if value is null
             if (value == null)
             {
-                return "Unknown"; // Or any other fallback string
+                return "Unknown";
             }
 
-            // Get the field info for the enum value
             var field = value.GetType().GetField(value.ToString());
+            var attribute = field?.GetCustomAttribute<DisplayAttribute>();
 
-            // Look for the Display attribute on the enum field
-            var attribute = field.GetCustomAttribute<DisplayAttribute>();
+            return attribute?.Name ?? value.ToString();
+        }
 
-            // If found, return the description, otherwise fallback to enum's string name
-            return attribute != null ? attribute.Name : value.ToString();
+        public static MudBlazor.Color GetStatusColor(BankStatus status)
+        {
+            return status switch
+            {
+                BankStatus.NEW_USER => MudBlazor.Color.Primary,
+                BankStatus.ACTIVE => MudBlazor.Color.Success,
+                BankStatus.INACTIVE => MudBlazor.Color.Default,
+                BankStatus.PENDING => MudBlazor.Color.Warning,
+                BankStatus.SUSPENDED => MudBlazor.Color.Error,
+                BankStatus.APPROVE => MudBlazor.Color.Info,
+                BankStatus.REJECT => MudBlazor.Color.Error,
+                _ => MudBlazor.Color.Secondary
+            };
         }
     }
 }
