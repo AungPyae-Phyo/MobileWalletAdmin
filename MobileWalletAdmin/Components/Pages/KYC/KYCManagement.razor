@@ -6,7 +6,8 @@
 @inject KYCService KYCService
 
 @inject NavigationManager Navigation
-
+<PageTitle>KYC Management</PageTitle>
+<MudText Typo="Typo.h4" GutterBottom="true">KYC Management</MudText>
 <MudBreadcrumbs>
     <MudBreadcrumbItem Text="Home" Href="/" />
     <MudBreadcrumbItem Text="KYC Management" Href="/kyc-management" />
@@ -15,50 +16,77 @@
         <MudBreadcrumbItem Text="KYC Detail" Href="@($"kyc-management/kyc-detail/{SelectedUserId}")" />
     }
 </MudBreadcrumbs>
+<MudPaper Class="d-flex flex-wrap gap-2 my-6">
+    <!-- All Button -->
+    <MudButton Variant="@(string.IsNullOrEmpty(selectedStatus) ? Variant.Outlined : Variant.Text)"
+               Color="@(string.IsNullOrEmpty(selectedStatus) ? Color.Primary : Color.Default)"
+               OnClick="@(() => OnStatusChanged(""))"
+               Class="mt-3 mb-3 ml-3"
+               StartIcon="@Icons.Material.Filled.FilterAlt">
+        All
+    </MudButton>
 
-<MudTable Items="@filterKYC"
-          Bordered="false"
-          Hover="true"
-          SortLabel="Sort By"
-          Elevation="0"
-          AllowUnsorted="false"
-          Dense="false"
-          Breakpoint="Breakpoint.None"
-          Style="table-layout: fixed; width: 100%;"
-          OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)"
-          RowStyleFunc="@( (row, index) => "cursor: pointer;" )">
+    <!-- Status Filter Buttons -->
+    @foreach (BankStatus status in Enum.GetValues(typeof(BankStatus)))
+    {
+        var statusValue = status.ToString();
+        <MudButton Variant="@(selectedStatus == statusValue ? Variant.Outlined : Variant.Text)"
+                   Color="@(selectedStatus == statusValue ? EnumHelper.GetStatusColor(status) : Color.Default)"
+                   OnClick="@(() => OnStatusChanged(statusValue))"
+                   Class="mt-3 mb-3 ml-3">
+            @EnumHelper.GetEnumDescription(status)
+        </MudButton>
+    }
+</MudPaper>
 
-    <HeaderContent>
-        <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60px;">No.</MudTh>
-        <MudTh>Request Date & Time</MudTh>
-        <MudTh>User Name</MudTh>
-        <MudTh>Identity</MudTh>
-        <MudTh>Last Modified Date & Time</MudTh>
-        <MudTh>KYC Status</MudTh>
-        <MudTh>Date of Birth</MudTh>
-        <MudTh>Approved By</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd Style="white-space: nowrap;" Class="font-weight-medium">@(filterKYC.IndexOf(context) + 1)</MudTd>
-        <MudTd DataLabel="Request Date">@context.createdOn</MudTd>
-        <MudTd DataLabel="User Name">@context.Name</MudTd>
-        <MudTd DataLabel="Identity">@context.Identity</MudTd>
-        <MudTd DataLabel="Last Modified">@context.LastModifiedOn</MudTd>
-        <MudTd>@GetStatusChip(context.Status)</MudTd>
 
-        <MudTd DataLabel="Date of Birth">@context.DOB?.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd DataLabel="Approved By">@context.CreatedBy</MudTd>
-    </RowTemplate>
-</MudTable>
+@if (filterKYC == null || !filterKYC.Any())
+{
+    <MudAlert Severity="Severity.Warning"> No KYC data found for the selected status.</MudAlert>
+}
+else
+{
+    <MudTable Items="@filterKYC"
+              Bordered="false"
+              Hover="true"
+              SortLabel="Sort By"
+              Elevation="0"
+              AllowUnsorted="false"
+              Dense="false"
+              Breakpoint="Breakpoint.None"
+              Style="table-layout: fixed; width: 100%;"
+              OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)"
+              RowStyleFunc="@( (row, index) => "cursor: pointer;" )">
 
+        <HeaderContent>
+            <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60px;">No.</MudTh>
+            <MudTh>Request Date & Time</MudTh>
+            <MudTh>User Name</MudTh>
+            <MudTh>Identity</MudTh>
+            <MudTh>Last Modified Date & Time</MudTh>
+            <MudTh>KYC Status</MudTh>
+            <MudTh>Date of Birth</MudTh>
+            <MudTh>Approved By</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="white-space: nowrap;" Class="font-weight-medium">@(filterKYC.IndexOf(context) + 1)</MudTd>
+            <MudTd DataLabel="Request Date">@context.createdOn</MudTd>
+            <MudTd DataLabel="User Name">@context.Name</MudTd>
+            <MudTd DataLabel="Identity">@context.Identity</MudTd>
+            <MudTd DataLabel="Last Modified">@context.LastModifiedOn</MudTd>
+            <MudTd>@GetStatusChip(context.Status)</MudTd>
+
+            <MudTd DataLabel="Date of Birth">@context.DOB?.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Approved By">@context.LastModifiedBy</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
 @code {
     private List<KYCModel> kyc = new();
     private string SelectedUserId { get; set; }
     private List<KYCModel> filterKYC = new();
-
-
+    private string selectedStatus = "";
     private CancellationTokenSource? _cts;
-
     protected override async Task OnInitializedAsync()
     {
         _cts = new CancellationTokenSource();
@@ -66,7 +94,8 @@
         try
         {
             kyc = await KYCService.GetAll(_cts.Token);
-            filterKYC = kyc.ToList();
+            // filterKYC = kyc.ToList();
+            FilterKYCList();
             Console.WriteLine($"Fetched {kyc.Count} KYC Users");
             await InvokeAsync(StateHasChanged);
         }
@@ -80,6 +109,24 @@
         }
     }
 
+    private void OnStatusChanged(string value)
+    {
+        selectedStatus = value;
+        FilterKYCList();
+    }
+
+    private void FilterKYCList()
+    {
+        if (string.IsNullOrEmpty(selectedStatus))
+        {
+            filterKYC = kyc.ToList();
+        }
+        else if (Enum.TryParse<BankStatus>(selectedStatus, out var status))
+        {
+            filterKYC = kyc.Where(k => k.Status == status).ToList();
+        }
+        StateHasChanged();
+    }
 
     private RenderFragment GetStatusChip(BankStatus status) => builder =>
        {
@@ -105,7 +152,6 @@
 
     private (Color Color, string Icon) GetStatusStyle(BankStatus status)
     {
-        Console.WriteLine($"Processing status: {status}");
         return status switch
         {
             BankStatus.NEW_USER => (Color.Default, Icons.Material.Filled.Person),
@@ -122,7 +168,7 @@
     private void OnRowClicked(TableRowClickEventArgs<KYCModel> args)
     {
         SelectedUserId = args.Item.Id.ToString();
-        Navigation.NavigateTo($"kyc-management/kyc-update/{SelectedUserId}");
+        Navigation.NavigateTo($"kyc-management/kyc-detail/{SelectedUserId}");
     }
 
     private Color GetStatusColor(string status)
