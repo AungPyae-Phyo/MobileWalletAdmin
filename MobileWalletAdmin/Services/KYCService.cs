@@ -1,5 +1,6 @@
 ﻿using MobileWalletAdmin.Models.KYC;
 using MobileWalletAdmin.Models.Users;
+using System.Net;
 using System.Text.Json;
 
 namespace MobileWalletAdmin.Services
@@ -103,6 +104,58 @@ namespace MobileWalletAdmin.Services
                 Console.WriteLine($" ERROR: Unexpected error: {ex.Message}");
                 return new KYCModel();
             }
+        }
+        public async Task<bool> UpdateStatus(string id, KYCModel kycModel, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _http.PutAsJsonAsync($"/kyc/update-status/{id}", kycModel, cancellationToken);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+
+                // Handle specific status codes
+                if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                    Console.WriteLine($"BadRequest details: {errorContent}");
+
+                    // You could parse the error response if needed
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _options);
+                        Console.WriteLine($"Error message: {errorResponse?.Message}");
+                        foreach (var error in errorResponse?.Errors ?? new List<ErrorDetail>())
+                        {
+                            Console.WriteLine($"Field: {error.Field}, Message: {error.Message}");
+                        }
+                    }
+                    catch { }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating status: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Add these classes to handle error responses
+        public class ErrorResponse
+        {
+            public string Message { get; set; }
+            public string Status { get; set; }
+            public List<ErrorDetail> Errors { get; set; }
+        }
+
+        public class ErrorDetail
+        {
+            public string Field { get; set; }
+            public string Message { get; set; }
         }
     }
 }
