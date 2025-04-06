@@ -16,9 +16,18 @@
     }
 </MudBreadcrumbs>
 
-<MudTable Items="@filterKYC" Bordered="false" Hover="true" SortLabel="Sort By" Elevation="0"
-          AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="table-layout: fixed; width: 100%;"
-OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)">
+<MudTable Items="@filterKYC"
+          Bordered="false"
+          Hover="true"
+          SortLabel="Sort By"
+          Elevation="0"
+          AllowUnsorted="false"
+          Dense="false"
+          Breakpoint="Breakpoint.None"
+          Style="table-layout: fixed; width: 100%;"
+          OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<KYCModel>>(this, OnRowClicked)"
+          RowStyleFunc="@( (row, index) => "cursor: pointer;" )">
+
     <HeaderContent>
         <MudTh Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60px;">No.</MudTh>
         <MudTh>Request Date & Time</MudTh>
