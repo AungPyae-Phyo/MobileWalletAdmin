@@ -41,34 +41,133 @@
 </MudButton>
 </MudPaper>
 
-<!-- Customer Details Section -->
-<MudPaper Class="pa-6 rounded-lg shadow-sm bg-grey-lighten-5" Style="width: 50%;">
-    <MudGrid>
-        <MudItem xs="12" Class="mb-3">
-            <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Primary">Customer Details</MudText>
-        </MudItem>
+<MudGrid Class="mb-6">
+
+    <!-- Left Column: Customer Details -->
+    <MudItem xs="12" sm="6">
+          <MudPaper Class="pa-6 rounded-lg shadow-sm bg-grey-lighten-5">
+        <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Primary">Customer Details</MudText>
 
         <MudItem xs="12" Class="d-flex mb-3">
             <MudText Class="mr-2" Style="min-width: 140px;"><b>Customer Name:</b></MudText>
             <MudText>@currentUser?.UserName</MudText>
         </MudItem>
-
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Account Number</b></MudText>
+            <MudText>@(string.IsNullOrEmpty(currentUser?.AccountNumber) ? "-" : currentUser?.AccountNumber)</MudText>
+        </MudItem>
         <MudItem xs="12" Class="d-flex mb-3">
             <MudText Class="mr-2" Style="min-width: 140px;"><b>Phone Number:</b></MudText>
             <MudText>@(string.IsNullOrEmpty(currentUser?.PhoneNumber) ? "-" : currentUser?.PhoneNumber)</MudText>
         </MudItem>
-
+            <MudItem xs="12" Class="d-flex mb-3">
+                <MudText Class="mr-2" Style="min-width: 140px;"><b>Father's Name</b></MudText>
+                <MudText>@(string.IsNullOrEmpty(kyc.FatherName) ? "-" : kyc.FatherName)</MudText>
+            </MudItem>
         <MudItem xs="12" Class="d-flex mb-3">
             <MudText Class="mr-2" Style="min-width: 140px;"><b>Date of Birth:</b></MudText>
             <MudText>@(kyc.DOB?.ToString("dd/MM/yyyy") ?? "-")</MudText>
         </MudItem>
-
         <MudItem xs="12" Class="d-flex mb-3">
-            <MudText Class="mr-2" Style="min-width: 140px;"><b>Father's Name:</b></MudText>
-            <MudText>@(string.IsNullOrEmpty(kyc.FatherName) ? "-" : kyc.FatherName)</MudText>
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Email:</b></MudText>
+            <MudText>@(string.IsNullOrEmpty(currentUser?.Email) ? "-" : currentUser?.Email)</MudText>
         </MudItem>
-    </MudGrid>
-</MudPaper>
+        <MudItem xs="12" Class="d-flex mb-3">
+            <MudText Class="mr-2" Style="min-width: 140px;"><b>Address:</b></MudText>
+            <MudText>@(string.IsNullOrEmpty(kyc.Address) ? "-" : kyc.Address)</MudText>
+        </MudItem>
+        </MudPaper>
+    </MudItem>
+
+    <!-- Right Column: Identity Info -->
+    <MudItem xs="12" sm="6">
+        <MudPaper Class="pa-6 rounded-lg shadow-sm bg-grey-lighten-5">
+            <MudText Typo="Typo.subtitle1" Class="mb-4" Color="Color.Primary">Identity Information</MudText>
+
+            <MudText Class="mb-2"><b>Document Type:</b> @(kyc.DocumentType.HasValue ? EnumHelper.GetEnumDescription(kyc.DocumentType.Value) : "-")</MudText>
+            <MudText Class="mb-2"><b>Identity Number:</b> @(string.IsNullOrEmpty(kyc.Identity) ? "-" : kyc.Identity)</MudText>
+
+            <MudGrid>
+                <MudItem xs="4">
+                    @if (!string.IsNullOrEmpty(kyc.FrontImage))
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;                
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    else
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;
+            
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    <MudText Align="Align.Start">Front Image</MudText>
+                </MudItem>
+
+                <MudItem xs="4">
+                    @if (!string.IsNullOrEmpty(kyc.BackImage))
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    else
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    <MudText Align="Align.Start">Back Image</MudText>
+                </MudItem>
+
+                <MudItem xs="4">
+                    @if (!string.IsNullOrEmpty(kyc.SelfieImage))
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;
+        
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    else
+                    {
+                        <MudImage Src="images/Not Found.png"
+                                  Alt="Default Back"
+                                  Style="border-radius: 8px;
+     
+                  opacity: 0.7;
+                  width: 120px; /* Fixed width */
+                  height: auto; /* Maintain aspect ratio */
+                  object-fit: contain;" />
+                    }
+                    <MudText Align="Align.Start">Selfie Image</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
 
 @code {
     [Parameter]
