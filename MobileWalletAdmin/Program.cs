@@ -15,6 +15,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 //builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<KYCService>();
 builder.Services.AddBlazoredLocalStorage();
 
 
