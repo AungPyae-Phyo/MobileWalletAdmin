@@ -1,0 +1,87 @@
+﻿@page "/wallet"
+@using MobileWalletAdmin.Models
+@using MobileWalletAdmin.Models.Wallet
+@using MobileWalletAdmin.Services
+@inject WalletService WalletService
+@inject NavigationManager Navigation
+
+<PageTitle>Wallet Overview</PageTitle>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Wallet Overview</MudText>
+
+<MudBreadcrumbs>
+    <MudBreadcrumbItem Text="Home" Href="/" />
+    <MudBreadcrumbItem Text="Wallet Management" Href="/wallet" />
+</MudBreadcrumbs>
+
+
+  <MudTable Items="@wallets"
+              Bordered="false"
+              Hover="true"
+              SortLabel="Sort By"
+              Elevation="0"
+              AllowUnsorted="false"
+              Dense="false"
+              Breakpoint="Breakpoint.None"
+              Style="table-layout: fixed; width: 100%;"
+              OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<WalletModel>>(this, OnRowClicked)"
+              RowStyleFunc="@( (row, index) => "cursor: pointer;" )">
+                
+        <HeaderContent>
+        <MudTh>No.</MudTh>
+            <MudTh>User Name</MudTh>
+            <MudTh>Balance</MudTh>
+            <MudTh>Last Updated On</MudTh>
+            <MudTh>Last modified By</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+        <MudTd Style="white-space: nowrap;" Class="font-weight-medium">@(filteredWallet.IndexOf(
+            context) + 1)</MudTd>
+
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Balance.ToString("C")</MudTd>
+            <MudTd>@context.LastModifiedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
+        <MudTd>@context.LastModifiedBy</MudTd>
+        </RowTemplate>
+    </MudTable>
+
+
+
+@code {
+    private List<WalletModel> wallets = new();
+    private List<WalletModel> filteredWallet = new();
+    private string selectedWalletId { get; set; }
+
+    private CancellationTokenSource _cts = new();
+
+   
+    protected override async Task OnInitializedAsync()
+    {
+        _cts = new CancellationTokenSource();
+        Console.WriteLine("Initializing User List...");
+        try
+        {
+            wallets = await WalletService.GetAll(_cts.Token);
+           filteredWallet = wallets.ToList();
+            Console.WriteLine($"Fetched {wallets.Count} users");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Operation was canceled.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+
+    private void OnRowClicked(TableRowClickEventArgs<WalletModel> args)
+    {
+        var selectedWalletId = args.Item.Id;
+         Navigation.NavigateTo($"/wallet/detail/{selectedWalletId}");
+    }
+
+}
+ 
