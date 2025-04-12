@@ -1,0 +1,79 @@
+﻿@page "/wallet/detail/{WalletId}"
+@using MobileWalletAdmin.Models.Wallet
+@using MobileWalletAdmin.Services
+@inject WalletService WalletService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Wallet Detail</PageTitle>
+<MudText Typo="Typo.h5" Class="mt-4 mb-2">Wallet Information</MudText>
+<MudBreadcrumbs Items="_breadcrumbItems" Separator="/" />
+
+@if (_wallet != null)
+{
+    <MudPaper Class="p-6 mb-12 d-flex flex-column gap-4" Elevation="2">
+        <MudText Class="mt-4 ml-6"><b>User name:</b> @_wallet.Name</MudText>
+        <MudText Class="mt-4 ml-6"><b>Account Number:</b> @_wallet.AccountNumber</MudText>
+        <MudText Class="mt-4 ml-6"><b>Current Balance:</b> $ @_wallet.Balance</MudText>
+
+        <MudTextField Class="mt-4 ml-6 mr-6" @bind-Value="_updateAmount"
+                      Label="Add / Subtract Balance"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentText="$"
+                      Type="MudBlazor.InputType.Number" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 ml-6 mr-6 mb-6" OnClick="UpdateWalletBalance">Update Balance</MudButton>
+    </MudPaper>
+}
+else
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+
+
+@code {
+    [Parameter]
+    public string WalletId { get; set; }
+
+    private WalletModel _wallet = new();
+    private decimal _updateAmount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var allWallets = await WalletService.GetAll(CancellationToken.None);
+        _wallet = allWallets.FirstOrDefault(w => w.Id == WalletId);
+    }
+
+    private async Task UpdateWalletBalance()
+    {
+        Console.WriteLine("Updating wallet for: " + _wallet.Id);
+
+        var updateRequest = new WalletModel
+            {
+                Id = _wallet.Id,
+                UserId = _wallet.Id, // in your case, WalletId is treated as userId in backend
+                Balance = _updateAmount
+            };
+
+        var result = await WalletService.UpdateBalance(updateRequest, CancellationToken.None);
+        if (result != null)
+        {
+            Snackbar.Add("Wallet balance updated!", Severity.Success);
+            _wallet = result; // Refresh with new balance
+            _updateAmount = 0; // reset input field
+        }
+        else
+        {
+            Snackbar.Add("Failed to update wallet balance.", Severity.Error);
+        }
+    }
+
+    private List<BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new BreadcrumbItem("Home", href: "/", icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("Wallet Overview", href: "/wallet"),
+        new BreadcrumbItem("Detail", href: null, disabled: true)
+    };
+}
+
