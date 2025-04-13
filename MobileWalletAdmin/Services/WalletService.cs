@@ -1,4 +1,5 @@
 ﻿using MobileWalletAdmin.Models.Wallet;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace MobileWalletAdmin.Services
@@ -87,6 +88,24 @@ namespace MobileWalletAdmin.Services
                 return null;
             }
         }
+
+        public async Task<List<WalletHistoryModel>> GetHistory(string walletId, CancellationToken cancellation)
+        {
+           var response = await _http.GetAsync($"/wallet/history/{walletId}", cancellation);
+            response.EnsureSuccessStatusCode();
+            string jsonResponse = await response.Content.ReadAsStringAsync(cancellation);
+            using JsonDocument doc = JsonDocument.Parse(jsonResponse);
+            JsonElement root = doc.RootElement;
+            if (!root.TryGetProperty("data", out JsonElement dataElement))
+            {
+                Console.WriteLine(" ERROR: 'data' section missing in API response!");
+                return new List<WalletHistoryModel>();
+            }
+            return JsonSerializer.Deserialize<List<WalletHistoryModel>>(dataElement.GetRawText(), _options) ?? new List<WalletHistoryModel>();
+        }
+
+
+
 
 
     }
