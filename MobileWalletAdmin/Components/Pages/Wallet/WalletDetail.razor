@@ -17,24 +17,56 @@
         <MudText Class="mt-4 ml-6"><b>Current Balance:</b> $ @_wallet.Balance</MudText>
 
         <MudTextField Class="mt-4 ml-6 mr-6" @bind-Value="_updateAmount"
-                      Label="Add / Subtract Balance"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentText="$"
-                      Type="MudBlazor.InputType.Number" />
+        Label="Add / Subtract Balance"
+        Variant="Variant.Outlined"
+        Adornment="Adornment.Start"
+        AdornmentText="$"
+        Type="MudBlazor.InputType.Number" />
 
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 ml-6 mr-6 mb-6" OnClick="UpdateWalletBalance">Update Balance</MudButton>
     </MudPaper>
+
+
+    <MudText Typo="Typo.h5" Class="mt-4 mb-2"> History</MudText>
+
+    @if (walletHistory == null)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (walletHistory.Count == 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mt-4 ml-6"><b>No history available.</b></MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@walletHistory">
+            <HeaderContent>
+                <MudTh>Date</MudTh>
+                <MudTh>Previous Balance</MudTh>
+                <MudTh>Add Balance</MudTh>
+                <MudTh>New Balance</MudTh>
+                <MudTh>Updated By</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.LastModifiedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                <MudTd>@context.PreviousBalance</MudTd>
+                <MudTd>@context.ChangeAmount</MudTd>
+                <MudTd>@context.NewBalance</MudTd>
+                <MudTd>@context.LastModifiedBy</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
 }
 else
 {
     <MudProgressCircular Indeterminate="true" />
 }
 
-
 @code {
+
     [Parameter]
     public string WalletId { get; set; }
+    private List<WalletHistoryModel> walletHistory = new();
 
     private WalletModel _wallet = new();
     private decimal _updateAmount = 0;
@@ -43,6 +75,11 @@ else
     {
         var allWallets = await WalletService.GetAll(CancellationToken.None);
         _wallet = allWallets.FirstOrDefault(w => w.Id == WalletId);
+
+        if (_wallet != null)
+        {
+            walletHistory = await WalletService.GetHistory(_wallet.Id, CancellationToken.None);
+        }
     }
 
     private async Task UpdateWalletBalance()
@@ -52,7 +89,7 @@ else
         var updateRequest = new WalletModel
             {
                 Id = _wallet.Id,
-                UserId = _wallet.Id, // in your case, WalletId is treated as userId in backend
+                UserId = _wallet.UserId, // Use UserId if applicable
                 Balance = _updateAmount
             };
 
@@ -60,14 +97,16 @@ else
         if (result != null)
         {
             Snackbar.Add("Wallet balance updated!", Severity.Success);
-            _wallet = result; // Refresh with new balance
-            _updateAmount = 0; // reset input field
+            _wallet = result;
+            _updateAmount = 0;
+            walletHistory = await WalletService.GetHistory(_wallet.Id, CancellationToken.None); // reload history
         }
         else
         {
             Snackbar.Add("Failed to update wallet balance.", Severity.Error);
         }
     }
+
 
     private List<BreadcrumbItem> _breadcrumbItems = new()
     {
