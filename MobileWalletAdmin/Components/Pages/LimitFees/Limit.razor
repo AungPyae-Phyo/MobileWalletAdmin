@@ -1,0 +1,191 @@
+﻿@page "/limits"
+@using MudBlazor
+@using MobileWalletAdmin.Models.LimitFees
+@using MobileWalletAdmin.Services
+@inject IDialogService DialogService
+@inject LimitFeesService LimitFeesService
+@inject ISnackbar Snackbar
+
+<MudCard Class="mb-4">
+    <MudCardHeader>
+        <MudText Typo="Typo.h5">Limit Fees Management</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        }
+        else
+        {
+            <MudTable Items="@limitFees" Hover="true" Striped="true" Elevation="2"
+                      Loading="@isLoading" LoadingProgressColor="Color.Info">
+                <ToolBarContent>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OpenAddDialog">Add New Limit Fee</MudButton>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.TransactionType)">Transaction Type</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.description)">Description</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.min_amount)">Min Amount</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.max_amount)">Max Amount</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.percent_fees)">Percent Fee</MudTableSortLabel></MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Transaction Type">@context.TransactionType</MudTd>
+                    <MudTd DataLabel="Description">@context.description</MudTd>
+                    <MudTd DataLabel="Min Amount">@context.min_amount.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Max Amount">@context.max_amount.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Percent Fee">@context.percent_fees.ToString("N2")%</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"
+                                       Size="Size.Small" OnClick="@(() => OpenEditDialog(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                       Size="Size.Small" OnClick="@(() => DeleteLimitFee(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 5, 10, 25, 50 }" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private List<LimitFeesModel> limitFees = new();
+    private string searchString = "";
+    private bool isLoading = true;
+    private CancellationTokenSource cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLimitFees();
+    }
+
+    private async Task LoadLimitFees()
+    {
+        isLoading = true;
+        try
+        {
+            limitFees = await LimitFeesService.GetAll(cts.Token);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading limit fees: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OpenEditDialog(LimitFeesModel limitFee)
+    {
+        var parameters = new DialogParameters
+            {
+                ["LimitFee"] = limitFee,
+                ["IsEdit"] = true
+            };
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+               // BackdropClickable = false,
+             
+            };
+        var dialog = DialogService.Show<LimitFeeDialog>("Edit Limit Fee", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var updatedFee = (LimitFeesModel)result.Data;
+            bool success = await LimitFeesService.Update(updatedFee, cts.Token);
+
+            if (success)
+            {
+                Snackbar.Add("Limit fee updated successfully", Severity.Success);
+                await LoadLimitFees(); // Reload data from API
+            }
+            else
+            {
+                Snackbar.Add("Failed to update limit fee", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters
+            {
+                ["LimitFee"] = new LimitFeesModel(),
+                ["IsEdit"] = false
+            };
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+            };
+
+        var dialog = DialogService.Show<LimitFeeDialog>("Add New Limit Fee", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var newFee = (LimitFeesModel)result.Data;
+
+            try
+            {
+                await LimitFeesService.Create(newFee, cts.Token);
+                Snackbar.Add("Limit fee added successfully", Severity.Success);
+                await LoadLimitFees(); // Reload data from API
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Failed to add limit fee: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+
+  private async Task DeleteLimitFee(LimitFeesModel limitFee)
+{
+    bool? result = await DialogService.ShowMessageBox(
+        "Confirm Delete",
+        $"Are you sure you want to delete the limit fee for {limitFee.TransactionType}?",
+        yesText: "Delete",
+        cancelText: "Cancel",
+        options: new DialogOptions { MaxWidth = MaxWidth.ExtraSmall }
+    );
+
+    if (result == true)
+    {
+        bool success = await LimitFeesService.Delete(limitFee.limit_fees_id!, cts.Token);
+
+        if (success)
+        {
+            Snackbar.Add("Limit fee deleted successfully", Severity.Success);
+            await LoadLimitFees(); // Reload data from API
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete limit fee", Severity.Error);
+        }
+    }
+}
+
+
+
+    public void Dispose()
+    {
+        cts.Cancel();
+        cts.Dispose();
+    }
+}
