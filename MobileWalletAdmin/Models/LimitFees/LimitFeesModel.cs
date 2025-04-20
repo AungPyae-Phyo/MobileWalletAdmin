@@ -5,9 +5,9 @@ namespace MobileWalletAdmin.Models.LimitFees
 {
     public class LimitFeesModel
     {
-        public string? limit_fees_id { get; set; }
+        public string? Id { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public TransactionType? TransactionType { get; set; }
+        public TransactionType TransactionType { get; set; }
         public string? description { get; set; }
         public decimal min_amount { get; set; }
         public decimal max_amount { get; set; }

@@ -89,29 +89,30 @@
     {
         var parameters = new DialogParameters
             {
-                ["LimitFee"] = limitFee,
+                ["LimitFee"] = limitFee, 
                 ["IsEdit"] = true
             };
+
         var options = new DialogOptions
             {
                 CloseOnEscapeKey = true,
                 MaxWidth = MaxWidth.Medium,
                 FullWidth = true,
-               // BackdropClickable = false,
-             
             };
+
         var dialog = DialogService.Show<LimitFeeDialog>("Edit Limit Fee", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
             var updatedFee = (LimitFeesModel)result.Data;
+
             bool success = await LimitFeesService.Update(updatedFee, cts.Token);
 
             if (success)
             {
                 Snackbar.Add("Limit fee updated successfully", Severity.Success);
-                await LoadLimitFees(); // Reload data from API
+                await LoadLimitFees();
             }
             else
             {
@@ -119,6 +120,7 @@
             }
         }
     }
+
 
     private async Task OpenAddDialog()
     {
@@ -167,7 +169,7 @@
 
     if (result == true)
     {
-        bool success = await LimitFeesService.Delete(limitFee.limit_fees_id!, cts.Token);
+        bool success = await LimitFeesService.Delete(limitFee.Id!, cts.Token);
 
         if (success)
         {

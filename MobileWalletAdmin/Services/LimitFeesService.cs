@@ -123,7 +123,7 @@ namespace MobileWalletAdmin.Services
                 Console.WriteLine($" ERROR: HTTP Request failed: {httpEx.Message}");
                 return null;
             }
-        }   
+        }
 
 
         public async Task<bool> Update(LimitFeesModel limitFees, CancellationToken cancellationToken)
@@ -132,7 +132,10 @@ namespace MobileWalletAdmin.Services
             {
                 var json = JsonSerializer.Serialize(limitFees, _options);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await _http.PutAsync($"/limitfees/{limitFees.limit_fees_id}", content, cancellationToken);
+
+                Console.WriteLine($"Sending PUT to /limitfees/update/{limitFees.Id}");
+
+                HttpResponseMessage response = await _http.PutAsync($"/limitfees/update/{limitFees.Id}", content, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return true;
             }
@@ -142,6 +145,7 @@ namespace MobileWalletAdmin.Services
                 return false;
             }
         }
+
 
         public async Task<bool> Delete(string id, CancellationToken cancellationToken)
         {
