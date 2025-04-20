@@ -1,0 +1,133 @@
+﻿@using MudBlazor
+@using MobileWalletAdmin.Models.LimitFees
+@inject ISnackbar Snackbar
+
+<MudDialog DisableSidePadding="true">
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto; padding: 24px;" MaxWidth="MaxWidth.Medium">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="LimitFee.TransactionType"
+                                  Label="Transaction Type"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Transaction type is required!"
+                                  HelperText="Enter the transaction type identifier"
+                                  Counter="50"
+                                  MaxLength="50"
+                                  Immediate="true"
+                                  FullWidth="true"
+                                  Disabled="@IsEdit" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="LimitFee.description"
+                                  Label="Description"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Description is required!"
+                                  HelperText="Describe the purpose of this fee"
+                                  Counter="200"
+                                  MaxLength="200"
+                                  Immediate="true"
+                                  Lines="2"
+                                  FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="LimitFee.min_amount"
+                                     Label="Min Amount"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     RequiredError="Min amount is required!"
+                                     HelperText="Minimum transaction amount"
+                                     Min="0"
+                                     Format="N2"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="LimitFee.max_amount"
+                                     Label="Max Amount"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     RequiredError="Max amount is required!"
+                                     HelperText="Maximum transaction amount"
+                                     Min="@LimitFee.min_amount"
+                                     Format="N2"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="LimitFee.percent_fees"
+                                     Label="Percent Fee (%)"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     RequiredError="Percent fee is required!"
+                                     HelperText="Fee percentage for this transaction type"
+                                     Min="0"
+                                     Max="100"
+                                     Format="N2"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="%"
+                                     FullWidth="true" />
+                </MudItem>
+
+                @if (IsEdit)
+                {
+                    <MudItem xs="12">
+                        <MudCheckBox T="bool"
+                                     @bind-Checked="LimitFee.is_active"
+                                     Label="Active"
+                                     Color="Color.Primary"
+                                     HelperText="Enable or disable this fee" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="@(!IsFormValid())">
+            @(IsEdit ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public LimitFeesModel LimitFee { get; set; } = new();
+
+    [Parameter] public bool IsEdit { get; set; } = false;
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(LimitFee.TransactionType?.ToString()) &&
+               !string.IsNullOrWhiteSpace(LimitFee.description) &&
+               LimitFee.min_amount >= 0 &&
+               LimitFee.max_amount > LimitFee.min_amount &&
+               LimitFee.percent_fees >= 0 &&
+               LimitFee.percent_fees <= 100;
+    }
+
+    private void Submit()
+    {
+        if (!IsFormValid())
+        {
+            Snackbar.Add("Please complete all required fields correctly", Severity.Warning);
+            return;
+        }
+
+        MudDialog.Close(DialogResult.Ok(LimitFee));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
