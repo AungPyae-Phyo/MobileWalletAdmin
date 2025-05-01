@@ -10,7 +10,7 @@
     <MudCardHeader>
         <MudText Typo="Typo.h5">Limit Fees Management</MudText>
     </MudCardHeader>
-    <MudCardContent>
+    
         @if (isLoading)
         {
             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
@@ -24,9 +24,6 @@
                                StartIcon="@Icons.Material.Filled.Add"
                                OnClick="OpenAddDialog">Add New Limit Fee</MudButton>
                     <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search"
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Medium" Class="mt-0"></MudTextField>
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh><MudTableSortLabel SortBy="new Func<LimitFeesModel, object>(x => x.TransactionType)">Transaction Type</MudTableSortLabel></MudTh>
@@ -54,7 +51,7 @@
                 </PagerContent>
             </MudTable>
         }
-    </MudCardContent>
+  
 </MudCard>
 
 @code {

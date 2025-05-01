@@ -7,10 +7,19 @@
         <MudLayout>
             <MudAppBar Elevation="1">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                <MudText Typo="Typo.h5" Class="ml-3">MWallet Dashboard</MudText>
+                <MudText Typo="Typo.h5" Class="ml-3">M-Wallet Dashboard</MudText>
                 <MudSpacer />
+                <MudText>Admin</MudText>
                 <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit">
+            <MudMenuItem OnClick="Logout">
+                <span class="d-flex align-items-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Logout" Class="me-2" />
+                    Logout
+                </span>
+            </MudMenuItem>
+        </MudMenu>
+
             </MudAppBar>
             <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
                 <NavMenu />
@@ -98,6 +107,12 @@
         true => Icons.Material.Rounded.AutoMode,
         false => Icons.Material.Outlined.DarkMode,
     };
+
+    private async Task Logout()
+    {
+        // await AuthService.Logout();
+        // NavigationManager.NavigateTo("/login");
+    }
 }
 
 

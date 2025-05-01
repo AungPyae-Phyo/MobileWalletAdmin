@@ -71,12 +71,20 @@ else
                 <MudTd Style="white-space: nowrap;">@GetStatusChip(user.Status)</MudTd>
                 <MudTd Style="white-space: nowrap;">@EnumHelper.GetEnumDescription(user.DocumentType)</MudTd>
                 <MudTd Style="white-space: nowrap;">
-                    <MudTooltip Text="Click to copy" Placement="Placement.Bottom">
-                        <span style="font-family: monospace; cursor: pointer;" @onclick="() => CopyToClipboard(user.AccountNumber)">
-                            @user.AccountNumber
-                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" />
-                        </span>
-                    </MudTooltip>
+                    @if (!string.IsNullOrWhiteSpace(user.AccountNumber))
+                    {
+                        <MudTooltip Text="Click to copy" Placement="Placement.Bottom">
+                            <span style="font-family: monospace; cursor: pointer;" @onclick="() => CopyToClipboard(user.AccountNumber)">
+                                @user.AccountNumber
+                                <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" />
+                            </span>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <span style="color: gray; font-size: large;"> - </span>
+                    }
+
                 </MudTd>
                 <MudTd Style="white-space: nowrap; text-align: right;" Class="font-weight-bold">
                     $@user.Balance.ToString("N0")
@@ -189,7 +197,7 @@ else
                 (x.AccountNumber?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (x.Role?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 EnumHelper.GetEnumDescription(x.Status).Contains(searchString, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+            ).ToList(); 
         }
         Console.WriteLine($"Filtered Users Count: {filteredUsers.Count}");
     }
