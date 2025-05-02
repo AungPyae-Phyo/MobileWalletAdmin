@@ -6,7 +6,7 @@
 @inject UserService UserService
 @inject KYCService KYCService
 
-<PageTitle>User Growth & KYC Status</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
 <MudText Typo="Typo.h5" Class="mb-4">📊 Dashboard Overview</MudText>
 
@@ -32,7 +32,7 @@
     </MudItem>
     <MudItem xs="12" sm="3">
         <MudCard Elevation="2" Class="pa-4 text-center">
-            <MudText Typo="Typo.h6">Unique KYC Statuses</MudText>
+            <MudText Typo="Typo.h6">KYC Statuses</MudText>
             <MudText Typo="Typo.subtitle1" Color="Color.Success">@_kycLabels.Length</MudText>
         </MudCard>
     </MudItem>
@@ -164,42 +164,36 @@
 
     private void PrepareDynamicChartData()
     {
-        var now = DateTime.Now;
         var monthlyTotals = new double[12];
         var cumulativeTotals = new double[12];
 
         foreach (var user in _users)
         {
-            if (user.createdOn.Year == now.Year)
+            int monthIndex = user.createdOn.Month - 1;
+            if (monthIndex >= 0 && monthIndex < 12)
             {
-                int monthIndex = user.createdOn.Month - 1;
                 monthlyTotals[monthIndex]++;
             }
         }
 
-        double runningTotal = _users.Count(u => u.createdOn.Year < now.Year);
+        double runningTotal = 0;
         for (int i = 0; i < 12; i++)
         {
             runningTotal += monthlyTotals[i];
             cumulativeTotals[i] = runningTotal;
         }
 
-        const double targetMaxY = 10;
-        var maxMonthly = monthlyTotals.Max();
-        var maxCumulative = cumulativeTotals.Max();
-
-        double scaleMonthly = maxMonthly == 0 ? 1 : targetMaxY / maxMonthly;
-        double scaleCumulative = maxCumulative == 0 ? 1 : targetMaxY / maxCumulative;
-
-        var scaledMonthly = monthlyTotals.Select(x => Math.Round(x * scaleMonthly, 2)).ToArray();
-        var scaledCumulative = cumulativeTotals.Select(x => Math.Round(x * scaleCumulative, 2)).ToArray();
+        // Optional scaling — you can remove this if you want real values
+        var scaledMonthly = monthlyTotals;
+        var scaledCumulative = cumulativeTotals;
 
         AllSeries = new List<ChartSeries>
-        {
-            new ChartSeries { Name = "Total Users", Data = scaledCumulative },
-            new ChartSeries { Name = "Monthly Users", Data = scaledMonthly }
-        };
+    {
+        new ChartSeries { Name = "Total Users", Data = scaledCumulative },
+        new ChartSeries { Name = "Monthly Users", Data = scaledMonthly }
+    };
     }
+
 
     private void PrepareKycChartData()
     {
