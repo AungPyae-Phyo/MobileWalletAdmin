@@ -1,0 +1,61 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using MobileWalletAdmin.Models
+@using MobileWalletAdmin.Models.Auth
+@inject NavigationManager Navigation
+@attribute [AllowAnonymous]
+
+<MudContainer Class="d-flex flex-column justify-center align-center" Style="height: 100vh;">
+    <MudPaper Class="pa-6" Elevation="6" Style="max-width: 400px; width: 100%;">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Login</MudText>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@errorMessage</MudAlert>
+        }
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <MudTextField T="string" Label="Email"
+                          @bind-Value="loginModel.Email"
+                          For="@(() => loginModel.Email)"
+                          Class="mb-3"
+                          FullWidth="true" />
+
+            <MudTextField T="string" Label="Password"
+                          @bind-Value="loginModel.Password"
+                          For="@(() => loginModel.Password)"
+                          InputType="InputType.Password"
+                          Class="mb-3"
+                          FullWidth="true" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       ButtonType="ButtonType.Submit">
+                Login
+            </MudButton>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private LoginModel loginModel = new();
+    private string errorMessage = "";
+
+    private async Task HandleLogin()
+    {
+        // Replace with your real authentication logic
+        if (loginModel.Email == "admin@email.com" && loginModel.Password == "1234")
+        {
+            Navigation.NavigateTo("/home");
+        }
+        else
+        {
+            errorMessage = "Invalid email or password.";
+        }
+    }
+}
