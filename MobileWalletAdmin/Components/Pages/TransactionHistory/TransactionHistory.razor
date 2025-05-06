@@ -1,0 +1,79 @@
+﻿@page "/transaction-history"
+@using MobileWalletAdmin.Models.TransactionHistory
+@inject MobileWalletAdmin.Services.TransactionHistoryService TransactionHistoryService
+
+<PageTitle>Transaction History</PageTitle>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Transaction History</MudText>
+<MudBreadcrumbs>
+    <MudBreadcrumbItem Text="Home" Href="/" />
+    <MudBreadcrumbItem Text="Transaction History" Href="/transaction-history" />
+</MudBreadcrumbs>
+
+<MudPaper Class="my-4 p-4">
+
+    @if (transactionHistories == null || !transactionHistories.Any())
+    {
+        <MudAlert Severity="Severity.Warning">No transaction data found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@transactionHistories"
+                  Bordered="false"
+                  Hover="true"
+                  Dense="false"
+                  Elevation="0"
+                  Breakpoint="Breakpoint.None"
+                  Style="table-layout: fixed; width: 100%;"
+                  RowStyleFunc="@( (row, index) => "cursor: default;" )">
+
+            <HeaderContent>
+                <MudTh Style="width: 60px;">No.</MudTh>
+                <MudTh>Transaction ID</MudTh>
+                <MudTh>Date & Time</MudTh>
+                <MudTh>Sender Name</MudTh>
+                <MudTh>Receiver Name</MudTh>
+                <MudTh>Amount</MudTh>
+                <MudTh>Transfer Type</MudTh>
+                <MudTh>Description</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@(transactionHistories.IndexOf(context) + 1)</MudTd>
+                <MudTd>@context.Id</MudTd>
+                <MudTd>@context.CreatedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                <MudTd>@context.SenderName</MudTd>
+                <MudTd>@context.ReceiverName</MudTd>
+                <MudTd>@context.Amount.ToString("C")</MudTd>
+                <MudTd>
+                    <MudChip T="string"
+                             Color="@GetTransactionTypeColor(context.TransactionType)"
+                             Variant="Variant.Text"
+                             Class="ma-1"
+                             Size="Size.Small"
+                             Label="true">
+                        @context.TransactionType
+                    </MudChip>
+
+                </MudTd>
+                <MudTd> @(string.IsNullOrEmpty(context.Description) ? " - " : context.Description)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudPaper>
+
+@code {
+    private List<TransactionHistoryModel>? transactionHistories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        transactionHistories = await TransactionHistoryService.GetAll(CancellationToken.None);
+    }
+
+    private Color GetTransactionTypeColor(string type) => type switch
+    {
+        "TRANSFER" => Color.Info,
+        "DEPOSIT" => Color.Success,
+        "WITHDRAWAL" => Color.Error,
+        _ => Color.Default
+    };
+}
