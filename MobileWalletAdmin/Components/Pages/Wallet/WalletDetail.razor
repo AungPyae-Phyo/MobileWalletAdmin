@@ -84,12 +84,16 @@ else
 
     private async Task UpdateWalletBalance()
     {
-        Console.WriteLine("Updating wallet for: " + _wallet.Id);
+        if (_updateAmount == 0)
+        {
+            Snackbar.Add("Amount must not be 0.", Severity.Error);
+            return;
+        }
 
         var updateRequest = new WalletModel
             {
                 Id = _wallet.Id,
-                UserId = _wallet.UserId, // Use UserId if applicable
+                UserId = _wallet.UserId,
                 Balance = _updateAmount
             };
 
@@ -99,7 +103,7 @@ else
             Snackbar.Add("Wallet balance updated!", Severity.Success);
             _wallet = result;
             _updateAmount = 0;
-            walletHistory = await WalletService.GetHistory(_wallet.Id, CancellationToken.None); // reload history
+            walletHistory = await WalletService.GetHistory(_wallet.Id, CancellationToken.None);
         }
         else
         {
