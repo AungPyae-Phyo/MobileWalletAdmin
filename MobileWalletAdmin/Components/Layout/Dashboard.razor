@@ -1,0 +1,253 @@
+﻿@page "/dashboard"
+@using MudBlazor
+@using MobileWalletAdmin.Models.Users
+@using MobileWalletAdmin.Models.KYC
+@using MobileWalletAdmin.Services
+@inject UserService UserService
+@inject KYCService KYCService
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+<PageTitle>Dashboard</PageTitle>
+
+<MudText Typo="Typo.h5" Class="mb-4">📊 Dashboard Overview</MudText>
+
+<!-- Summary Cards -->
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="3">
+        <MudCard Elevation="2" Class="pa-4 text-center">
+            <MudText Typo="Typo.h6">Total Users</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_users.Count</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudCard Elevation="2" Class="pa-4 text-center">
+            <MudText Typo="Typo.h6">Monthly Users</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@MonthlyUserCount</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudCard Elevation="2" Class="pa-4 text-center">
+            <MudText Typo="Typo.h6">Total KYC</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Info">@_kycData.Count</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudCard Elevation="2" Class="pa-4 text-center">
+            <MudText Typo="Typo.h6">KYC Statuses</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Success">@_kycLabels.Length</MudText>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<!-- Charts -->
+<MudGrid>
+    <!-- Line Chart -->
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-2">📈 Monthly User Growth</MudText>
+
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudCard Elevation="2" Class="pa-2 text-center mb-3"
+                             Style="@(SelectedUserType == "Total" ? "background-color: var(--mud-palette-primary); color: white;" : "")"
+                             @onclick="@(() => ChangeUserType("Total"))">
+                        <MudText>Total Users</MudText>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudCard Elevation="2" Class="pa-2 text-center mb-3"
+                             Style="@(SelectedUserType == "Monthly" ? "background-color: var(--mud-palette-primary); color: white;" : "")"
+                             @onclick="@(() => ChangeUserType("Monthly"))">
+                        <MudText>Monthly Users</MudText>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <MudChart ChartType="ChartType.Line"
+                      ChartSeries="@CurrentSeries"
+                      XAxisLabels="@MonthLabels"
+                      Width="100%"
+                      Height="300px"
+                      ChartOptions="@_chartOptions" />
+        </MudPaper>
+    </MudItem>
+
+    <!-- Pie Chart -->
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-2">KYC Status Distribution</MudText>
+
+            @if (_isLoadingKyc)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.body2">Loading KYC data...</MudText>
+            }
+            else if (_kycValues.Sum() == 0)
+            {
+                <MudText Typo="Typo.body2">No KYC data available to display.</MudText>
+            }
+            else
+            {
+                <MudChart ChartType="ChartType.Pie"
+                          Width="100%"
+                          Height="300px"
+                          InputData="@_kycValues"
+                          InputLabels="@_kycLabels"
+                          ChartOptions="@_kycChartOptions" />
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string[] MonthLabels = new[]
+    {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+
+    private List<UserModel> _users = new();
+    private List<KYCModel> _kycData = new();
+    private bool _isLoading = true;
+    private bool _isLoadingKyc = true;
+
+    private double[] _kycValues = Array.Empty<double>();
+    private string[] _kycLabels = Array.Empty<string>();
+
+    private List<ChartSeries> AllSeries = new();
+    private List<ChartSeries> CurrentSeries = new();
+    private string SelectedUserType = "Total";
+
+    private int MonthlyUserCount => _users.Count(u =>
+        u.createdOn.Year == DateTime.Now.Year &&
+        u.createdOn.Month == DateTime.Now.Month);
+
+    private ChartOptions _chartOptions = new ChartOptions
+        {
+            YAxisTicks = 2,
+            MaxNumYAxisTicks = 4
+        };
+
+    private ChartOptions _kycChartOptions = new ChartOptions();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var usersTask = UserService.GetAll(CancellationToken.None);
+            var kycTask = KYCService.GetAll(CancellationToken.None);
+
+            await Task.WhenAll(usersTask, kycTask);
+
+            _users = await usersTask;
+            _kycData = await kycTask;
+
+            PrepareDynamicChartData();
+            PrepareKycChartData();
+            UpdateChart();
+
+            _isLoading = false;
+            _isLoadingKyc = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+            _isLoading = false;
+            _isLoadingKyc = false;
+        }
+    }
+
+    private void ChangeUserType(string type)
+    {
+        SelectedUserType = type;
+        UpdateChart();
+    }
+
+    private void PrepareDynamicChartData()
+    {
+        var monthlyTotals = new double[12];
+        var cumulativeTotals = new double[12];
+
+        foreach (var user in _users)
+        {
+            int monthIndex = user.createdOn.Month - 1;
+            if (monthIndex >= 0 && monthIndex < 12)
+            {
+                monthlyTotals[monthIndex]++;
+            }
+        }
+
+        double runningTotal = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            runningTotal += monthlyTotals[i];
+            cumulativeTotals[i] = runningTotal;
+        }
+
+        // Optional scaling — you can remove this if you want real values
+        var scaledMonthly = monthlyTotals;
+        var scaledCumulative = cumulativeTotals;
+
+        AllSeries = new List<ChartSeries>
+    {
+        new ChartSeries { Name = "Total Users", Data = scaledCumulative },
+        new ChartSeries { Name = "Monthly Users", Data = scaledMonthly }
+    };
+    }
+
+
+    private void PrepareKycChartData()
+    {
+        var statusGroups = _kycData
+            .GroupBy(k => k.Status.ToString().ToLower())
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        _kycLabels = statusGroups.Keys
+            .Select(s => char.ToUpper(s[0]) + s[1..])
+            .ToArray();
+
+        _kycValues = statusGroups.Values
+            .Select(count => (double)count)
+            .ToArray();
+
+        var colorMapping = new Dictionary<string, string>
+        {
+            { "Reject", "#FF6B6B" },
+            { "Locked", "#FFD166" },
+            { "Approve", "#89CFF0" },
+            { "Active", "#06D6A0" },
+            { "Pending", "#FF9F00" }
+        };
+
+        var chartPalette = _kycLabels.Select(label =>
+        {
+            if (colorMapping.TryGetValue(label, out var color))
+                return color;
+            return "#A9B7C6";
+        }).ToArray();
+
+        _kycChartOptions = new ChartOptions
+            {
+                ChartPalette = chartPalette
+            };
+    }
+
+    private void UpdateChart()
+    {
+        CurrentSeries.Clear();
+
+        if (SelectedUserType == "Total")
+        {
+            var totalSeries = AllSeries.FirstOrDefault(s => s.Name == "Total Users");
+            if (totalSeries is not null)
+                CurrentSeries.Add(totalSeries);
+        }
+        else if (SelectedUserType == "Monthly")
+        {
+            var monthlySeries = AllSeries.FirstOrDefault(s => s.Name == "Monthly Users");
+            if (monthlySeries is not null)
+                CurrentSeries.Add(monthlySeries);
+        }
+    }
+}
