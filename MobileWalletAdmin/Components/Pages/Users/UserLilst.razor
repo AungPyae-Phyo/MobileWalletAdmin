@@ -22,7 +22,9 @@ else
         @*     <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ExportPDF" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="ml-2">Export PDF</MudButton> *@
         @* </MudPaper> *@
         <MudTable Items="@filteredUsers" Hover="true" SortLabel="Sort By" Elevation="0" id="kyc-table"
-                  AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None" Style="table-layout: fixed; width: 100%;">
+                  AllowUnsorted="false" Dense="false" Breakpoint="Breakpoint.None"
+                  Style="table-layout: fixed; width: 100%;" RowsPerPage="5" RowsPerPageOptions="new int[] { 5, 10, 15 }">
+
             <ToolBarContent>
                 <MudSpacer />
                 <MudTextField @bind-Value="searchString" Placeholder="Search..."
