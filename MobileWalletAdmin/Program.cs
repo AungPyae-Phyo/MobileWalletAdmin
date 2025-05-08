@@ -3,8 +3,8 @@ using MobileWalletAdmin.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 //using MobileWalletAdmin.Authentication;
 using MobileWalletAdmin.Services;
+
 using Blazored.LocalStorage;
-using BlazorAuth.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +14,15 @@ builder.Services.AddMudServices();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+//builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
 //builder.Services.AddScoped<ApiService>();
+//builder.Services.AddScoped<IHttpService, HttpService>();
+builder.Services.AddAuthenticationCore();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<KYCService>();
 builder.Services.AddScoped<WalletService>();
 builder.Services.AddScoped<LimitFeesService>();
+builder.Services.AddScoped<TransactionHistoryService>();
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<HttpClient>(sp =>
